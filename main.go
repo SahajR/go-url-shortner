@@ -1,7 +1,11 @@
 package main
 
-import s "./server"
+import (
+	"./server"
+	"fmt"
+)
 
 func main() {
-	s.SayHello()
+	fmt.Println("Starting server...")
+	server.Start()
 }
