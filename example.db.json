@@ -1,3 +1,5 @@
 {
-    "connectionString": "mongodb://whatevs:what@ds66600.mlab.com:00999/nonsense"
+  "connectionString": "mongodb://whatevs:what@ds66600.mlab.com:00999/nonsense",
+  "dbName": "whatevs",
+  "port": 3000
 }
