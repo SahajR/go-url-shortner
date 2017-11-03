@@ -21,6 +21,7 @@ type RouteHandler interface {
 }
 
 func (handler *APIHandler) ShortenURLHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: Add Shorten logic
 	json.NewEncoder(w).Encode(Counter{
 		ID:4,
 		Seq:78,
@@ -28,8 +29,10 @@ func (handler *APIHandler) ShortenURLHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (handler *APIHandler) RedirectHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: Add redirect logic
+	nextId, _ := handler.dbHandler.GetNextId()
 	json.NewEncoder(w).Encode(Counter{
 		ID:4,
-		Seq:78,
+		Seq:nextId,
 	})
 }
