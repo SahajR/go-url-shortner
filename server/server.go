@@ -6,30 +6,30 @@ import (
 	"URL-Shortner/api"
 	"net/http"
 	"errors"
-	"github.com/spf13/viper"
+	"strconv"
 )
 
-func Start() error {
+type Config struct {
+	ConnectionString string
+	DatabaseName string
+	Port int
+}
+
+func Start(config *Config) error {
 	router := mux.NewRouter()
-	DbHandler, err := api.NewDbHandler(getDbURL())
+	DbHandler, err := api.NewDbHandler(config.ConnectionString, config.DatabaseName)
 
 	if err != nil {
-		fmt.Println("Unable to initialize database connection!")
+		fmt.Println("Unable to initialize database connection! Please check your config.")
 		return errors.New("Database connection error")
 	}
 
 	APIHandler := api.NewAPIHandler(*DbHandler)
 
+	// Add router end-points
 	router.Methods("GET").PathPrefix("/shorten").HandlerFunc(APIHandler.ShortenURLHandler)
 	router.Methods("GET").PathPrefix("/{id}").HandlerFunc(APIHandler.RedirectHandler)
 
-	return http.ListenAndServe("localhost:3003", router)
-}
-
-func getDbURL() string {
-	viper.SetConfigName("db")
-	viper.AddConfigPath(".")
-	viper.SetConfigType("json")
-	viper.ReadInConfig()
-	return viper.GetString("connectionString")
+	// Start the server
+	return http.ListenAndServe("localhost:" + strconv.Itoa(config.Port), router)
 }
