@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"URL-Shortner/utils"
 	"github.com/gorilla/mux"
+	netURL "net/url"
 )
 
 type APIHandler struct {
@@ -30,15 +31,21 @@ type RouteHandler interface {
 	ShortenURLHandler(http.ResponseWriter, *http.Request)
 }
 
+// The Handler for the `shorten` api route.
+// The URL to be shortened must be passed as a query parameter.
 func (handler *APIHandler) ShortenURLHandler(w http.ResponseWriter, r *http.Request) {
-	url, ok := r.URL.Query()["url"]
-	if ok {
-		existingURL, existError := handler.dbHandler.GetURLByLongURL(url[0])
+	longURL, ok := r.URL.Query()["url"]
+	_, urlParseError := netURL.ParseRequestURI(longURL[0])
+	if ok && urlParseError == nil{
+		// Check if the long URL is already in the database.
+		// Proceed to retrieve its ID and generate the short code if it does.
+		existingURL, existError := handler.dbHandler.GetURLByLongURL(longURL[0])
 		if existError != nil {
+			// The given URL doesn't exist in the Db. Add it and retrieve the ID.
 			nextId, _ := handler.dbHandler.GetNextId()
 			err := handler.dbHandler.AddURL(URL{
 				ID:nextId,
-				LongURL:url[0],
+				LongURL:longURL[0],
 				Clicks:0,
 			})
 			if err != nil {
@@ -60,23 +67,26 @@ func (handler *APIHandler) ShortenURLHandler(w http.ResponseWriter, r *http.Requ
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(ResultFailure{
-			ErrorMessage: "Bad request: Please provide URL",
+			ErrorMessage: "Bad request: Please provide a valid URL",
 		})
 	}
 }
 
+
+// The Handler for redirection.
 func (handler *APIHandler) RedirectHandler(w http.ResponseWriter, r *http.Request) {
 	id, ok := mux.Vars(r)["id"]
 	if ok {
 		url, err := handler.dbHandler.GetURLById(utils.Decode(id))
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusNotFound)
 			json.NewEncoder(w).Encode(ResultFailure{
 				ErrorMessage: "There's no such URL",
 			})
 		} else {
-			handler.dbHandler.UpdateClickCount(url.ID)
 			http.Redirect(w, r, url.LongURL, http.StatusMovedPermanently)
+			// Silently update click count of the URL
+			handler.dbHandler.UpdateClickCount(url.ID)
 		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
