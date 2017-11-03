@@ -10,13 +10,13 @@ type DbHandler struct {
 }
 
 type URL struct {
-	ID      int    `bson:"-"`
+	ID      int    `bson:"_id"`
 	LongURL string `bson:"long_url"`
-	Clicks  string `bson:"clicks"`
+	Clicks  int `bson:"clicks"`
 }
 
 type Counter struct {
-	ID	int `bson:"-"`
+	ID	int `bson:"_id"`
 	Seq int `bson:"seq"`
 }
 

@@ -6,11 +6,12 @@ import (
 	"URL-Shortner/api"
 	"net/http"
 	"errors"
+	"github.com/spf13/viper"
 )
 
 func Start() error {
 	router := mux.NewRouter()
-	DbHandler, err := api.NewDbHandler("mongodb://sahajr_url_shortner:TWEEKxCRAIG@ds143754.mlab.com:43754/sahajr-website")
+	DbHandler, err := api.NewDbHandler(getDbURL())
 
 	if err != nil {
 		fmt.Println("Unable to initialize database connection!")
@@ -19,9 +20,16 @@ func Start() error {
 
 	APIHandler := api.NewAPIHandler(*DbHandler)
 
-	apirouter := router.PathPrefix("/").Subrouter()
-	apirouter.Methods("GET").Path("/{id}").HandlerFunc(APIHandler.RedirectHandler)
-	apirouter.Methods("GET").PathPrefix("/shorten").HandlerFunc(APIHandler.ShortenURLHandler)
+	router.Methods("GET").PathPrefix("/shorten").HandlerFunc(APIHandler.ShortenURLHandler)
+	router.Methods("GET").PathPrefix("/{id}").HandlerFunc(APIHandler.RedirectHandler)
 
 	return http.ListenAndServe("localhost:3003", router)
+}
+
+func getDbURL() string {
+	viper.SetConfigName("db")
+	viper.AddConfigPath(".")
+	viper.SetConfigType("json")
+	viper.ReadInConfig()
+	return viper.GetString("connectionString")
 }

@@ -29,3 +29,7 @@ func Decode(str string) int {
 	}
 	return num - adjustment
 }
+
+func GetURL(host, code string) string {
+	return "https://" + host + "/" + code
+}
