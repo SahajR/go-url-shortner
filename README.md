@@ -11,4 +11,12 @@ Install the following dependencies:
 This project uses MongoDB. You can get a free hosted one at [mLab](https://mlab.com/). Get the connection string and database name and put them in `example.db.json`. Rename it to `db.json`
 . The default port the server runs is 3000. You can change it in the config if you wish.
 
-Then you can start the server by running `go run main.go`
+Then you can start the server by running:
+```
+go run main.go
+ 
+// OR
+ 
+go build main.go
+./main
+```
