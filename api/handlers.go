@@ -42,7 +42,13 @@ func (handler *APIHandler) ShortenURLHandler(w http.ResponseWriter, r *http.Requ
 		existingURL, existError := handler.dbHandler.GetURLByLongURL(longURL[0])
 		if existError != nil {
 			// The given URL doesn't exist in the Db. Add it and retrieve the ID.
-			nextId, _ := handler.dbHandler.GetNextId()
+			nextId, idError := handler.dbHandler.GetNextId()
+			if nextId == -1 {
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(ResultFailure{
+					ErrorMessage: "Internal server error. " + idError.Error(),
+				})
+			}
 			err := handler.dbHandler.AddURL(URL{
 				ID:nextId,
 				LongURL:longURL[0],
