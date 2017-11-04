@@ -20,3 +20,12 @@ go run main.go
 go build main.go
 ./main
 ```
+The server will be running on localhost listening on the `port` in the config.
+
+With a GET request to `localhost:3000?url={LONG_URL}`, you get the short code as result: 
+```json
+{
+  "ShortURL": "http://localhost:3000/5h0r1"
+}
+```
+Navigating to `http://localhost:3000/5h0r1` will redirect back to `{LONG_URL}`.
