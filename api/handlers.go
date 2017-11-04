@@ -35,8 +35,15 @@ type RouteHandler interface {
 // The URL to be shortened must be passed as a query parameter.
 func (handler *APIHandler) ShortenURLHandler(w http.ResponseWriter, r *http.Request) {
 	longURL, ok := r.URL.Query()["url"]
-	_, urlParseError := netURL.ParseRequestURI(longURL[0])
-	if ok && urlParseError == nil{
+	if ok {
+		_, urlParseError := netURL.ParseRequestURI(longURL[0])
+		if urlParseError != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(ResultFailure{
+				ErrorMessage: "Invalid URL",
+			})
+			return
+		}
 		// Check if the long URL is already in the database.
 		// Proceed to retrieve its ID and generate the short code if it does.
 		existingURL, existError := handler.dbHandler.GetURLByLongURL(longURL[0])
@@ -48,6 +55,7 @@ func (handler *APIHandler) ShortenURLHandler(w http.ResponseWriter, r *http.Requ
 				json.NewEncoder(w).Encode(ResultFailure{
 					ErrorMessage: "Internal server error. " + idError.Error(),
 				})
+				return
 			}
 			err := handler.dbHandler.AddURL(URL{
 				ID:nextId,
