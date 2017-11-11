@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./server"
+	"URL-Shortner/server"
 	"fmt"
 	"github.com/spf13/viper"
 	"strconv"
